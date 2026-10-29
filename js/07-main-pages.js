@@ -24,7 +24,7 @@ function renderMain(r){
   if (sec === 'requests') {
     const v = id || 'mine';
     if (v === 'new') { location.replace(href('/requests/mine', {new: r.q.type || '1'})); return ''; }
-    if (['mine','participant'].includes(v)) return renderList(v);
+    if (['mine','participant'].includes(v)) return renderList(v, r.q);
     return denied('Страница не найдена.');
   }
   if (sec === 'spaces' && id) {
@@ -57,16 +57,20 @@ function listFor(u, kind){
   return l.slice().sort((a,b) => b.createdAt.localeCompare(a.createdAt));
 }
 
-function renderList(kind){
+function renderList(kind, q){
   const u = me();
-  const rows = listFor(u, kind);
+  const all = listFor(u, kind), done = q.state === 'done';
+  const rows = all.filter(x => isDone(x) === done);
+  const nDone = all.filter(isDone).length;
   const titles = {mine:'Мои заявки', participant:'Я участник запроса'};
   const emptyText = {
     mine:'Вы ещё не подавали заявок. Подайте заявку в нужный проект: IT, HR и другие направления.',
     participant:'Вас пока не добавляли участником запроса ни в одну заявку.'
   };
   let body;
-  if (!rows.length) {
+  if (all.length && !rows.length) {
+    body = `<div class="empty"><div class="eic">${icon('inbox',24)}</div><h4>${done ? 'Завершённых заявок нет' : 'Активных заявок нет'}</h4><p>${done ? 'Здесь появятся заявки в завершающем статусе.' : 'Все заявки завершены. Их можно посмотреть в «Завершённые».'}</p></div>`;
+  } else if (!rows.length) {
     body = `<div class="empty"><div class="eic">${icon('inbox',24)}</div><h4>Заявок нет</h4><p>${emptyText[kind]}</p><button class="btn btn-p" data-a="new-req">${icon('plus',14)}Новая заявка</button>${fr(4)}</div>`;
   } else {
     body = `<table class="tbl"><thead><tr><th>№</th><th>Название</th><th>Проект</th><th>Тип</th><th>Статус</th><th>Создана</th></tr></thead><tbody>
@@ -79,6 +83,7 @@ function renderList(kind){
         participant:'Здесь заявки, куда вас добавили участником запроса. Ваши собственные заявки — во вкладке «Мои заявки».',}[kind])}${fr('FR-4: без исполнителя и срока')}<div class="grow"></div>
         <button class="btn btn-p hide-m" data-a="new-req">${icon('plus',14)}Новая заявка</button></div>
       ${requestsTabs(kind)}
+      ${all.length ? `<div class="toolbar"><div class="seg"><button class="${done?'':'on'}" data-a="req-state" data-v="active">Активные ${all.length - nDone}</button><button class="${done?'on':''}" data-a="req-state" data-v="done">Завершённые ${nDone}</button></div></div>` : ''}
       <div class="pbody">${body}</div>
     </div>`;
 }

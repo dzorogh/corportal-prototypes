@@ -91,6 +91,7 @@ const A = {
     setQ({card:n.req});
   },
   qview: el => setQ({view: el.dataset.v === 'list' ? null : el.dataset.v}),
+  'req-state': el => setQ({state: el.dataset.v === 'done' ? 'done' : null}),
   'flt-clear': () => setQ({proj:null, type:null, status:null, ff:null, fv:null, noexec:null}),
   ptab: el => { UI.typeDraft = null; setQ({tab: el.dataset.v}); },
   'sp-menu': el => { UI.pjMenu = null; UI.spMenu = UI.spMenu === el.dataset.sid ? null : el.dataset.sid; render(); },
